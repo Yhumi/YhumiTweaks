@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Dalamud.NET.Sdk/14.0.2">
+  <PropertyGroup>
+    <Version>0.0.0.1</Version>
+    <PackageProjectUrl>https://github.com/goatcorp/SamplePlugin</PackageProjectUrl>
+    <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+      <DalamudLibPath>$(appdata)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
+      <DalamudPluginPath>$(appdata)\XIVLauncher\installedPlugins\YhumiTweaks\$(version)</DalamudPluginPath>
+      <DalamudDevPlugins>$(appdata)\XIVLauncher\devPlugins\YhumiTweaks\</DalamudDevPlugins>
+      <AssemblyName>YhumiTweaks</AssemblyName>
+      <RootNamespace>YhumiTweaks</RootNamespace>
+      <PackageId>YhumiTweaks</PackageId>
+      <Product>YhumiTweaks</Product>
+      <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+      <TargetFramework>net10.0-windows</TargetFramework>
+      <Platforms>x64</Platforms>
+      <Nullable>enable</Nullable>
+      <LangVersion>preview</LangVersion>
+      <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+      <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+      <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+      <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+      <OutputPath>bin/Release</OutputPath>
+      <NoWarn>CS1591</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+      <TargetFramework>net10.0-windows</TargetFramework>
+      <Platforms>x64</Platforms>
+      <Nullable>enable</Nullable>
+      <LangVersion>preview</LangVersion>
+      <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+      <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+      <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+      <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+      <OutputPath>$(DalamudDevPlugins)</OutputPath>
+      <NoWarn>CS1591</NoWarn>
+  </PropertyGroup>
+
+  <Target Name="PackagePlugin" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
+      <DalamudPackager ProjectDir="$(ProjectDir)" OutputPath="$(OutputPath)" AssemblyName="$(AssemblyName)" MakeZip="true" />
+  </Target>
+
+  <ItemGroup>
+    <PackageReference Include="ECommons" Version="3.1.0.26" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="DotNet.ReproducibleBuilds" Version="2.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Helpers\" />
+  </ItemGroup>
+</Project>
