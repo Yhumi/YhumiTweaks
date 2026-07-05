@@ -3,6 +3,7 @@ using Dalamud.Game.Inventory.InventoryEventArgTypes;
 using ECommons;
 using ECommons.DalamudServices;
 using ECommons.Throttlers;
+using FFXIVClientStructs.FFXIV.Client.Game;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,11 +18,13 @@ namespace YhumiTweaks.Controllers
         private uint EternityRingId = 0;
         private uint GlamourPrismId = 0;
 
-        private bool GlamRing = false;
         private GlamStages currentGlamStage = GlamStages.None;
         private int currentStageAttempts = 0;
+        private bool ringsMatch = false;
 
         private string EquippedLeftRingName = string.Empty;
+
+        private List<uint> previouslyEquipped = new List<uint>();
 
         public GlamController()
         {
@@ -36,8 +39,24 @@ namespace YhumiTweaks.Controllers
 
         private void GameInventory_ItemMoved(IReadOnlyCollection<InventoryEventArgs> events)
         {
+            if (!P.Config.AutoGlamWeddingRing)
+                return;
+
             if (!CastGlamourAddonUtils.IsMiragePrismUnlocked())
                 return;
+
+            var currentlyEquipped = new List<uint>();
+            foreach (var e in events.Where(x => x.Item.ContainerType == GameInventoryType.EquippedItems))
+            {
+                currentlyEquipped.Add(e.Item.ItemId);
+            }
+
+            if (!previouslyEquipped.Except(currentlyEquipped).Any() && !currentlyEquipped.Except(previouslyEquipped).Any())
+            {
+                Svc.Log.Debug($"No changes to equipped items.");
+                return;
+            }
+            previouslyEquipped = currentlyEquipped;
 
             var eternityRing = CharacterInfo.FindInventoryItem(EternityRingId);
             if (eternityRing == null)
@@ -64,7 +83,14 @@ namespace YhumiTweaks.Controllers
                     Svc.Log.Debug($"Left ring is already glammed as the eternity ring or already is the eternity ring.");
                     return;
                 }
-                    
+
+                var equippedRightRing = CharacterInfo.EquippedGear->GetInventorySlot((int)CharacterEquippedGearSlotIndex.RightRing);
+                if (equippedLeftRing->GetBaseItemId() == equippedRightRing->GetBaseItemId())
+                {
+                    Svc.Log.Debug($"Rings match.");
+                    ringsMatch = true;
+                }
+
                 var newLeftRingItem = LuminaSheets.ItemSheet?.Where(x => x.Value.RowId == equippedLeftRing->GetBaseItemId()).FirstOrNull()?.Value.Name.GetText() ?? string.Empty;
                 Svc.Log.Debug($"Left Ring: {equippedLeftRing->GetBaseItemId()} - {newLeftRingItem}.");
 
@@ -79,13 +105,19 @@ namespace YhumiTweaks.Controllers
                 Svc.Log.Debug($"Starting glamming...");
 
                 P.TM.Enqueue(() => CastGlamourAddonUtils.OpenMiragePrism(), "Open Cast Glamour");
-                currentGlamStage = GlamStages.SelectItem;
+
+                if (ringsMatch)
+                    currentGlamStage = GlamStages.UnequipRightRing;
+                else
+                    currentGlamStage = GlamStages.SelectItem;
+
                 currentStageAttempts = 0;
             }
         }
 
         public void Tick()
         {
+            if (!EzThrottler.Check($"YhumiTweaks.SecondRing")) return;
             if (!EzThrottler.Throttle("YhumiTweaks.GlamControllerLoop", P.Config.AutoGlamWeddingRingThrottleMs)) return;
 
             if (!Svc.ClientState.IsLoggedIn) return;
@@ -99,11 +131,16 @@ namespace YhumiTweaks.Controllers
                 currentGlamStage = GlamStages.None;
             }
 
+            if (currentGlamStage == GlamStages.UnequipRightRing)
+            {
+                currentGlamStage = GlamStages.SelectItem;
+            }
+
             if (currentGlamStage == GlamStages.SelectItem)
             {
                 if (CastGlamourAddonUtils.SelectItemToGlam(EquippedLeftRingName))
                 {
-                    Svc.Log.Debug($"Selected LeftRing by name.");
+                    Svc.Log.Debug($"Selected ring by name.");
                     currentGlamStage = GlamStages.GlamEternityRing;
                     currentStageAttempts = 0;
                 }
@@ -129,15 +166,26 @@ namespace YhumiTweaks.Controllers
                     currentGlamStage = GlamStages.CloseWindow;
                     currentStageAttempts = 0;
                 }
+                else { currentStageAttempts++; }
             }
 
             if (currentGlamStage == GlamStages.CloseWindow)
             {
                 if (CastGlamourAddonUtils.CloseWindow())
                 {
-                    currentGlamStage = GlamStages.None;
+                    if (!ringsMatch)
+                        currentGlamStage = GlamStages.None;
+                    else
+                        currentGlamStage = GlamStages.ReEquipRightRing;
+
                     currentStageAttempts = 0;
                 }
+                else { currentStageAttempts++; }
+            }
+
+            if (currentGlamStage == GlamStages.ReEquipRightRing)
+            {
+                currentGlamStage = GlamStages.None  ;
             }
         }
 
@@ -149,9 +197,11 @@ namespace YhumiTweaks.Controllers
     public enum GlamStages
     {
         None,
+        UnequipRightRing,
         SelectItem,
         GlamEternityRing,
         ConfirmGlamour,
-        CloseWindow
+        CloseWindow,
+        ReEquipRightRing
     }
 }

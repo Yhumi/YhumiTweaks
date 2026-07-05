@@ -5,6 +5,7 @@ using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using System;
+using System.Linq;
 using YhumiTweaks.Readers;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 using static YhumiTweaks.Readers.ReaderMiragePrismAddon;
@@ -30,13 +31,8 @@ namespace YhumiTweaks.Utils
             if (TryGetAddonByName<AtkUnitBase>("MiragePrism", out var miragePrism) && IsAddonReady(miragePrism))
             {
                 var itemReader = new ReaderMiragePrismAddon(((AtkUnitBasePtr)miragePrism).Address);
-
-                foreach(var item in itemReader.ItemNameList)
-                {
-                    Svc.Log.Verbose($"{item.Name}");
-                }
-
                 var itemIndex = itemReader.ItemNameList.IndexOf(x => x.Name.Contains(itemName, StringComparison.CurrentCultureIgnoreCase));
+
                 Svc.Log.Debug($"Item Reader Item Index: {itemIndex} for {itemName} @ atkPos {itemReader.ItemListAtkPosition(itemIndex)}");
 
                 if (itemIndex == -1) return false;

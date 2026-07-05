@@ -11,8 +11,12 @@ public class Configuration : IPluginConfiguration
 {
     public int Version { get; set; } = 0;
 
-    public bool AutoGlamWeddingRing { get; set; } = true;
+    public bool AutoGlamWeddingRing { get; set; } = false;
     public int AutoGlamWeddingRingThrottleMs { get; set; } = 50;
+
+    public bool AutoCorrectCameraHeight { get; set; } = false;
+    public float SavedInstanceHeight { get; set; } = 60;
+    public float SavedOutOfInstanceHeight { get; set; } = 20;
 
     // The below exists just to make saving less cumbersome
     public void Save()
