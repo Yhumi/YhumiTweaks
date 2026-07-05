@@ -291,8 +291,11 @@ namespace YhumiTweaks.UI
                             {
                                 BackupCollectionModSettings = new PenumbraModSettings(targetColletionModInformation.settings ?? null, SelectedMod.Value.Key, ToSelectedCollection.Value.Key, ToSelectedCollection.Value.Value);
                                 FromCollectionModSettings = new PenumbraModSettings(collectionModInformation.settings.Value, SelectedMod.Value.Key, FromSelectedCollection.Value.Key, FromSelectedCollection.Value.Value);
+
+                                P.PenumbraIPC.TrySetMod(ToSelectedCollection.Value.Key, SelectedMod.Value.Key, collectionModInformation.settings.Value.enabled);
                                 P.PenumbraIPC.TrySetModSettings(ToSelectedCollection.Value.Key, SelectedMod.Value.Key, collectionModInformation.settings.Value.settings);
-                            }       
+                                P.PenumbraIPC.TrySetModPriority(ToSelectedCollection.Value.Key, SelectedMod.Value.Key, collectionModInformation.settings.Value.priority);
+                            }
                         }
                     }
                 }
@@ -301,7 +304,11 @@ namespace YhumiTweaks.UI
                 if (ImGuiEx.Button($"Revert", BackupCollectionModSettings.HasValue))
                 {
                     if (BackupCollectionModSettings.HasValue)
+                    {
+                        P.PenumbraIPC.TrySetMod(BackupCollectionModSettings.Value.ModCollection, BackupCollectionModSettings.Value.ModName, BackupCollectionModSettings.Value.Enabled);
                         P.PenumbraIPC.TrySetModSettings(BackupCollectionModSettings.Value.ModCollection, BackupCollectionModSettings.Value.ModName, BackupCollectionModSettings.Value.Settings);
+                        P.PenumbraIPC.TrySetModPriority(BackupCollectionModSettings.Value.ModCollection, BackupCollectionModSettings.Value.ModName, BackupCollectionModSettings.Value.Priority);
+                    }  
                 }
 
                 ImGui.Separator();

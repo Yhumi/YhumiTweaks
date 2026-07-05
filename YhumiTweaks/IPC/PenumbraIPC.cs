@@ -13,14 +13,20 @@ namespace YhumiTweaks.IPC
         private GetCollections _getCollections;
         private GetModList _getModList;
         private GetCurrentModSettings _getCurrentModSettings;
+
+        private TrySetMod _trySetMod;
         private TrySetModSettings _trySetModSettings;
+        private TrySetModPriority _trySetModPriority;
 
         public PenumbraIPC()
         {
             _getCollections = new GetCollections(Svc.PluginInterface);
             _getModList = new GetModList(Svc.PluginInterface);
             _getCurrentModSettings = new GetCurrentModSettings(Svc.PluginInterface);
+
+            _trySetMod = new TrySetMod(Svc.PluginInterface);
             _trySetModSettings = new TrySetModSettings(Svc.PluginInterface);
+            _trySetModPriority = new TrySetModPriority(Svc.PluginInterface);
         }
 
         public Dictionary<Guid, string> GetCollections()
@@ -62,6 +68,18 @@ namespace YhumiTweaks.IPC
             }
         }
 
+        public void TrySetMod(Guid targetCollectionId, string modName, bool enabled)
+        {
+            try
+            {
+                _trySetMod.Invoke(targetCollectionId, modName, enabled);
+            }
+            catch (Exception ex)
+            {
+                Svc.Log.Error($"TrySetMod Error: {ex.Message}");
+            }
+        }
+
         public void TrySetModSettings(Guid targetCollectionId, string modName, Dictionary<string, List<string>> settings)
         {
             try
@@ -73,7 +91,19 @@ namespace YhumiTweaks.IPC
             }
             catch (Exception ex)
             {
-                Svc.Log.Error($"");
+                Svc.Log.Error($"TrySetModSettings Error: {ex.Message}");
+            }
+        }
+    
+        public void TrySetModPriority(Guid targetCollectionId, string modName, int prio)
+        {
+            try
+            {
+                _trySetModPriority.Invoke(targetCollectionId, modName, prio);
+            }
+            catch (Exception ex)
+            {
+                Svc.Log.Error($"TrySetModPriority Error: {ex.Message}");
             }
         }
     }
