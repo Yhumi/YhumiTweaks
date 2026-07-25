@@ -6,6 +6,7 @@ using ECommons.DalamudServices;
 using ECommons.ImGuiMethods;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using YhumiTweaks.Helpers;
 
@@ -60,6 +61,10 @@ namespace YhumiTweaks.UI
 
         private PenumbraModSettings? FromCollectionModSettings;
         private PenumbraModSettings? BackupCollectionModSettings;
+
+        private string MoidSearch = string.Empty;
+        private string CollectionFromSearch = string.Empty;
+        private string CollectionToSearch = string.Empty;
 
         public TweaksWindow() : base($"{P.Name} {P.GetType().Assembly.GetName().Version}###YhumiSettings")
         {
@@ -208,7 +213,12 @@ namespace YhumiTweaks.UI
                 ImGui.Text($"Select Mod to Copy:");
                 if (ImGui.BeginCombo("##YT_ModToCopy", SelectedMod?.Value.ToString() ?? ""))
                 {
-                    foreach (var mod in penumbraMods)
+                    ImGui.Text("Search");
+                    ImGui.SameLine();
+                    ImGui.InputText($"##YT_ModToCopy-Search", ref MoidSearch, 100);
+
+                    var filteredMods = penumbraMods.Where(x => x.Key.ToLowerInvariant().Contains(MoidSearch.ToLower()));
+                    foreach (var mod in filteredMods)
                     {
                         bool isSelected = SelectedMod.HasValue ? SelectedMod.Value.Key == mod.Key : false;
                         if (ImGui.Selectable(mod.Key, isSelected))
@@ -231,7 +241,12 @@ namespace YhumiTweaks.UI
                 ImGui.Text($"Select Collection to Copy Settings From:");
                 if (ImGui.BeginCombo("##YT_PenumbraCollectionsFrom", FromSelectedCollection?.Value.ToString() ?? "")) 
                 {
-                    foreach (var collection in penumbraCollections)
+                    ImGui.Text("Search");
+                    ImGui.SameLine();
+                    ImGui.InputText($"##YT_PenumbraCollectionsFrom-Search", ref CollectionFromSearch, 100);
+
+                    var filteredCollections = penumbraCollections.Where(x => x.Value.ToLowerInvariant().Contains(CollectionFromSearch.ToLower()));
+                    foreach (var collection in filteredCollections)
                     {
                         bool isSelected = FromSelectedCollection.HasValue ? FromSelectedCollection.Value.Key == collection.Key : false;
                         if (ImGui.Selectable(collection.Value, isSelected))
@@ -254,7 +269,12 @@ namespace YhumiTweaks.UI
                 ImGui.Text($"Select Target Colletion to apply settings to:");
                 if (ImGui.BeginCombo("##YT_PenumbraCollectionsTo", ToSelectedCollection?.Value.ToString() ?? ""))
                 {
-                    foreach (var collection in penumbraCollections)
+                    ImGui.Text("Search");
+                    ImGui.SameLine();
+                    ImGui.InputText($"##YT_PenumbraCollectionsTo-Search", ref CollectionToSearch, 100);
+
+                    var filteredCollections = penumbraCollections.Where(x => x.Value.ToLowerInvariant().Contains(CollectionToSearch.ToLower()));
+                    foreach (var collection in filteredCollections)
                     {
                         bool isSelected = ToSelectedCollection.HasValue ? ToSelectedCollection.Value.Key == collection.Key : false;
                         if (ImGui.Selectable(collection.Value, isSelected))
