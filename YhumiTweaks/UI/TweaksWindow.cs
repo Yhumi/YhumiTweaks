@@ -66,6 +66,9 @@ namespace YhumiTweaks.UI
         private string CollectionFromSearch = string.Empty;
         private string CollectionToSearch = string.Empty;
 
+        private string ExistingCarbyPlushy = string.Empty;
+        private string CarbyPlushyOut = string.Empty;
+
         public TweaksWindow() : base($"{P.Name} {P.GetType().Assembly.GetName().Version}###YhumiSettings")
         {
             this.RespectCloseHotkey = false;
@@ -89,6 +92,7 @@ namespace YhumiTweaks.UI
                 DrawWeddingRingTab();
                 DrawCameraHeightAdjustmentTab();
                 DrawPenumbraSettingsCopy();
+                DrawCarbyPlushyFishExport();
 
                 ImGui.EndTabBar();
             }
@@ -340,6 +344,24 @@ namespace YhumiTweaks.UI
                 }
 
                 ImGui.EndTabItem();
+            }
+        }
+
+        private void DrawCarbyPlushyFishExport()
+        {
+            if (ImGui.BeginTabItem("CarbyPlushy Fish Export###YT_CPFE"))
+            {
+                ImGui.TextWrapped("Export your existing settings from the carbuncle plushy site and paste them into the input below, then hit export and the lower input will populate with the caught fish.");
+
+                ImGui.InputTextEx("Exported From Fish Tracker###YT_InputPlushy", "", ref ExistingCarbyPlushy, 32768 * 2);
+
+                if (ImGui.Button("Export###YT_ExportCarbyButton"))
+                {
+                    var newJson = CarbyPlushyHelper.FishFinder(ExistingCarbyPlushy);
+                    CarbyPlushyOut = newJson;
+                }
+
+                ImGui.InputTextEx("Updated Config!###YT_OutputPlushy", "", ref CarbyPlushyOut, 32768 * 2, default, ImGuiInputTextFlags.ReadOnly);
             }
         }
 
